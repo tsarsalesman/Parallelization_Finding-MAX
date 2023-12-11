@@ -97,6 +97,8 @@ double stop(struct timeval tstart, struct timeval tend) {
 
 /****************************************************************/
 // TODO: implement your thread masin loop function here
+
+// !!RETURN MAX INSTEAD OF NULL TO PREVENT RACE CONDITION!!
 void *find_max_threads(void *arg) {
   struct ThreadInfo *thread_info = (struct ThreadInfo *)arg;
   int i;
@@ -202,7 +204,7 @@ int main(int argc, char **argv) {
   long *thread_ids= malloc(nthreads*sizeof(long));
 
   tstart= start(tstart);
-  // creates nthreads, and calls mainloop to find max
+  // creates nthreads, and calls find_max_threads to find max
   for (i= 0; i < nthreads; i++) {
     thread_ids[i]= i;
     thread_info[i].start= i * (N / nthreads);
