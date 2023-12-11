@@ -32,7 +32,7 @@ static pthread_mutex_t result_mutex = PTHREAD_MUTEX_INITIALIZER;
 // TODO:if you want to pass each thread's main function more than a single
 // value, you should define a new struct type with field values for
 // each argument you want to pass it
-struct ThreadInfo {
+typedef struct ThreadInfo {
   int id;
   long start;
   long end;
