@@ -4,7 +4,7 @@
  * Find the maximum value in a set of N values using M threads
  * Adapted from Dive Into Systems at Swarthmore.
  * 
- * HENRY WANDOVER, BARD COLLEGE FALL 2023
+ * Yashar Khan & Henry Wandover, Bard College F2023
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,8 +28,6 @@ static long *max_values; // array for all max values found per thread
 // TODO:if you want some shared synchronization primatives, declare
 // them here (you can also init them here too).  For example:
 static pthread_mutex_t result_mutex = PTHREAD_MUTEX_INITIALIZER;
-// You might ignore this until we've discussed shared memory.
-
 
 // TODO:if you want to pass each thread's main function more than a single
 // value, you should define a new struct type with field values for
@@ -40,12 +38,10 @@ struct ThreadInfo {
   long end;
 };
 
-// Function prototypes
-
 /**
  * thread main routine that finds max
 */
-void *thread_mainloop(void *arg);
+void *find_max_threads(void *arg);
 /** 
  * inits an array to random values
  * 
@@ -58,12 +54,16 @@ void init_values(long *values, unsigned long n);
  * 
  * @param values: the array to init
  * @param n: size of the array
+ *
+ * @return void
 */
 void print_values(long *values, unsigned long n);
 /**
  * Prints max value w/o threading/parralelism
  * @param values: the array to init
  * @param n: size of the array
+ *
+ * @return void
 */
 void print_max(long *values, unsigned long n);
 /*error handling function: prints out error message*/
@@ -75,6 +75,7 @@ int print_error(char *msg) {
 /**
  * Starts clock and returns instance
  * @param tstart: time start
+ *
  * @return the tstart instance
 */
 struct timeval start(struct timeval tstart) { 
@@ -86,8 +87,8 @@ struct timeval start(struct timeval tstart) {
  * Stops clock and returns the total time
  * @param tstart: time start
  * @param tend: time end
+ *
  * @return total time (double)
- * 
 */
 double stop(struct timeval tstart, struct timeval tend) {
   gettimeofday(&tend, NULL);
@@ -97,8 +98,6 @@ double stop(struct timeval tstart, struct timeval tend) {
 
 /****************************************************************/
 // TODO: implement your thread masin loop function here
-
-// !!RETURN MAX INSTEAD OF NULL TO PREVENT RACE CONDITION!!
 void *find_max_threads(void *arg) {
   struct ThreadInfo *thread_info = (struct ThreadInfo *)arg;
   int i;
@@ -113,11 +112,10 @@ void *find_max_threads(void *arg) {
   // Update the shared max_values array
   max_values[thread_info->id] = max;
 
-  // Use a mutex to protect the critical section where result is updated
+  // Use a lock to protect the critical section where result is updated,
+  // Puts to sleep threads as only one thread holds the 'key' at a time
   pthread_mutex_lock(&result_mutex);
-  if (max > result) {
-    result = max;
-  }
+  if (max > result) { result = max; }
   pthread_mutex_unlock(&result_mutex);
 
   return NULL;
@@ -240,15 +238,16 @@ int main(int argc, char **argv) {
   
   // Cleanup
   free(thread_info);
-  thread_info = NULL;
+  thread_info= NULL;
   free(max_values);
-  max_values = NULL;
+  max_values= NULL;
   pthread_mutex_destroy(&result_mutex);
   free(threads);
-  threads = NULL;
+  threads= NULL;
   free(thread_ids);
-  thread_ids = NULL;
+  thread_ids= NULL;
   free(values);
-  values = NULL;
+  values= NULL;
+  
   exit(0);
 }
